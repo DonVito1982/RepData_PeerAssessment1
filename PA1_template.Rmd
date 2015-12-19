@@ -1,5 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: Victor Zambrano
 output: 
   html_document:
     keep_md: true
@@ -7,7 +8,16 @@ output:
 
 
 ## Loading and preprocessing the data
-
+```{r}
+stepsDay2 <- read.csv('data/activity.csv')
+minuteAverage <- tapply(stepsDay2$steps, stepsDay2$interval, mean, na.rm = T)
+minuteAverage <- as.data.frame(minuteAverage)
+for (iter in 1:length(stepsDay2$steps)){
+  if (is.na(stepsDay2$steps)){
+    stepsDay2$steps[iter] <- minuteAverage[iter %% length(minuteAverage)]
+  }
+}
+```
 
 
 ## What is mean total number of steps taken per day?
