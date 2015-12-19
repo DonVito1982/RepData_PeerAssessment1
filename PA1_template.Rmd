@@ -8,13 +8,16 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r}
+```{r first_chunk}
 stepsDay2 <- read.csv('data/activity.csv')
 minuteAverage <- tapply(stepsDay2$steps, stepsDay2$interval, mean, na.rm = T)
 minuteAverage <- as.data.frame(minuteAverage)
+stepsDay2$processed <- 0
 for (iter in 1:length(stepsDay2$steps)){
   if (is.na(stepsDay2$steps)){
-    stepsDay2$steps[iter] <- minuteAverage[iter %% length(minuteAverage)]
+    stepsDay2$processed[iter] <- minuteAverage[[((iter-1) %% length(minuteAverage))+1]]
+  } else {
+    stepsDay2$processed[iter] <- stepsDay2$steps[iter]
   }
 }
 ```
@@ -22,7 +25,19 @@ for (iter in 1:length(stepsDay2$steps)){
 
 ## What is mean total number of steps taken per day?
 
+In order to calculate the mean over different days, we use de tapply function.
 
+```{r second_chunk}
+dailySteps <- tapply(stepsDay2$steps, stepsDay2$date, sum)
+stepsPerDay <- mean(dailySteps)
+```
+
+Each day the subject takes `stepsPerDay` steps per day on average. Over the 61 days that the
+test was taken, the average steps taken per day is described in the following histogram
+
+```{r histogram_chunk}
+hist(dailySteps, main = 'Daily Steps Average', col = 'blue')
+```
 
 ## What is the average daily activity pattern?
 
