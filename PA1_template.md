@@ -1,14 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-author: Victor Zambrano
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
+Victor Zambrano  
 
 
 ## Loading and preprocessing the data
-```{r first_chunk}
+
+```r
 completeSteps <- read.csv('data/activity.csv')
 minuteAverage <- tapply(completeSteps$steps, completeSteps$interval, mean, na.rm = TRUE)
 DFminuteAverage <- as.data.frame(minuteAverage)
@@ -20,19 +16,23 @@ DFminuteAverage <- as.data.frame(minuteAverage)
 
 In order to calculate the mean over different days, we use de tapply function.
 
-```{r second_chunk}
+
+```r
 dailySteps <- tapply(completeSteps$steps, completeSteps$date, sum, na.rm = TRUE)
 dailyStepsMean <- mean(dailySteps)
 dailyStepsMedian <- median(dailySteps)
 ```
 
-Each day the subject takes `r dailyStepsMean` steps per day on average, with a
-median of `r dailyStepsMedian`. Over the 61 days that the
+Each day the subject takes 9354.2295082 steps per day on average, with a
+median of 10395. Over the 61 days that the
 test was taken, the average steps taken per day is described in the following histogram
 
-```{r histogram_chunk}
+
+```r
 hist(dailySteps, main = 'Daily Steps Average', col = 'blue')
 ```
+
+![](PA1_template_files/figure-html/histogram_chunk-1.png) 
 
 
 ## What is the average daily activity pattern?
@@ -49,7 +49,8 @@ numbers (again... in string format), to four-digit numbers. E.g. '635' would be 
 
 To get the format we desire, we need a helper function
 
-```{r date_format_helper}
+
+```r
 dateFormat <- function(cadena){
   as.POSIXct(substr(paste('000', cadena, sep = ''),
                     nchar(cadena), nchar(cadena)+3), format = '%H%M')
@@ -58,7 +59,8 @@ dateFormat <- function(cadena){
 
 And now the vector for the *X* axis is obtained simply by:
 
-```{r X_axis}
+
+```r
 minutes <- dateFormat(rownames(DFminuteAverage))
 ```
 
@@ -70,23 +72,27 @@ This is much simpler... This result was previously computed
 
 ### Making the plot
 
-```{r plotting}
+
+```r
 library(graphics)
 library(grDevices)
 plot(minutes, DFminuteAverage$minuteAverage, type = 'l', xlab = 'Time of day',
      ylab = 'Average Steps')
 ```
 
+![](PA1_template_files/figure-html/plotting-1.png) 
+
 ### Maximum Performance time interval
 
 The maximum performance time interval is computed by:
 
-```{r max_performance}
+
+```r
 max_performance <- minutes[which(minuteAverage == max(minuteAverage))]
 idealMinute <- substr(max_performance, 12, 16)
 ```
 
-Which results in `r idealMinute`
+Which results in 08:35
 
 ## Imputing missing values
 
@@ -94,50 +100,39 @@ In this section will do the following:
 
 ### Calculate and report the total number of missing values in the dataset 
 
-```{r NA_total}
+
+```r
 num_NA <- sum(is.na(completeSteps$steps))
 ```
 
-The total of NA values is `r num_NA`
+The total of NA values is 2304
 
 ### Devise a strategy for filling in all of the missing values in the dataset
 
 The chosen strategy will be to substitute NA values with the mean for that 5-minute interval
 
-```{r process_data}
-completeSteps$processed <- 0
-for (iter in 1:length(stepsDay2$steps)){
-  if (is.na(completeSteps$steps[iter])){
-    completeSteps$processed[iter] <- minuteAverage[((iter-1) %% length(minuteAverage))+1]
-  } else {
-    completeSteps$processed[iter] <- completeSteps$steps[iter]
-  }
-}
-```
 
-Now we have an additional column for the substituted data
+```r
+# 
+# completeSteps$processed <- 0
+# for (iter in 1:length(stepsDay2$steps)){
+#   if (is.na(completeSteps$steps[iter])){
+#     completeSteps$processed[iter] <- minuteAverage[[((iter-1) %% length(minuteAverage))+1]]
+#   } else {
+#     stepsDay2$processed[iter] <- completeSteps$steps[iter]
+#   }
+# }
+```
 
 ### Make a histogram of the total number of steps taken each day
-
 Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r modified_data}
-newDailySteps <- tapply(completeSteps$processed, completeSteps$date, sum)
-newDailyStepsMean <- mean(newDailySteps)
-newDailyStepsMedian <- median(newDailySteps)
-```
 
-The daily steps mean for the modfied data is `r newDailyStepsMean` which is higher than the previous `r dailyStepsMean`.
+Now we process the data to substitute NA values with the average steps taken on a
+5-minute time frame
 
-The daily steps median for the modified data is `r newDailyStepsMedian` which is higher than
-the previous `r dailyStepsMedian`
+
+
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
-
-For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
-
-Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
-
-Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
-
-
