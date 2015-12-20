@@ -12,6 +12,11 @@ output:
 stepsDay2 <- read.csv('data/activity.csv')
 minuteAverage <- tapply(stepsDay2$steps, stepsDay2$interval, mean, na.rm = T)
 minuteAverage <- as.data.frame(minuteAverage)
+```
+
+Now we process the data to substitute NA values with the average steps taken on a 5-minute time frame
+
+```{r process_data}
 stepsDay2$processed <- 0
 for (iter in 1:length(stepsDay2$steps)){
   if (is.na(stepsDay2$steps)){
@@ -39,8 +44,9 @@ test was taken, the average steps taken per day is described in the following hi
 hist(dailySteps, main = 'Daily Steps Average', col = 'blue')
 ```
 
-## What is the average daily activity pattern?
 
+
+## What is the average daily activity pattern?
 
 
 ## Imputing missing values
