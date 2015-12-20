@@ -113,26 +113,75 @@ The chosen strategy will be to substitute NA values with the mean for that 5-min
 
 
 ```r
-# 
-# completeSteps$processed <- 0
-# for (iter in 1:length(stepsDay2$steps)){
-#   if (is.na(completeSteps$steps[iter])){
-#     completeSteps$processed[iter] <- minuteAverage[[((iter-1) %% length(minuteAverage))+1]]
-#   } else {
-#     stepsDay2$processed[iter] <- completeSteps$steps[iter]
-#   }
-# }
+completeSteps$processed <- 0
+for (iter in 1:length(completeSteps$steps)){
+  if (is.na(completeSteps$steps[iter])){
+    completeSteps$processed[iter] <- minuteAverage[((iter-1) %% length(minuteAverage))+1]
+  } else {
+    completeSteps$processed[iter] <- completeSteps$steps[iter]
+  }
+}
 ```
 
+Now we have an additional column for the substituted data
+
 ### Make a histogram of the total number of steps taken each day
-Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+In this section will use the new column to plot a histogram of the subtituted data
 
 
-Now we process the data to substitute NA values with the average steps taken on a
-5-minute time frame
+```r
+newDailySteps <- tapply(completeSteps$processed, completeSteps$date, sum)
+newDailyStepsMean <- mean(newDailySteps)
+newDailyStepsMedian <- median(newDailySteps)
+hist(newDailySteps, main = 'Processed Data Histogram', xlab = 'Daily steps',col = 'red')
+```
 
+![](PA1_template_files/figure-html/modified_data-1.png) 
 
+The daily steps mean for the modfied data is 1.0766189\times 10^{4} which is higher than the previous 9354.2295082.
 
-
+The daily steps median for the modified data is 1.0766189\times 10^{4} which is also 
+higher than the previous 10395
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Yes, there are. That will be shown in a standard XY with two series: one for weekdays
+and one for weekends.
+
+First, we'll create the necessary data in the form of a data frame with two columns:
+'Weekday' and 'Weekend' which will contain the average steps taken in a 5-minute time-frame.
+
+Depending on the locale the `weekend_days` variable
+should be adjusted:
+
+
+```r
+weekend_days <- c('sábado', 'domingo') # es_VE.utf8 locale
+weekClass <- ifelse(weekdays(as.POSIXct(completeSteps$date,
+                                        format = '%Y-%m-%d')) %in% weekend_days,
+                    'Weekend', 'Weekday')
+classifiedSteps <- lapply(split(completeSteps, weekClass),
+                          function(x) tapply(x$steps, x$interval, mean, na.rm = TRUE))
+```
+
+Now we add the recently created data to the previously created `DFminuteAverage`
+
+
+```r
+DFminuteAverage$Weekday <- classifiedSteps$Weekday
+DFminuteAverage$Weekend <- classifiedSteps$Weekend
+```
+
+And finally we plot the data
+
+
+```r
+plot(minutes, DFminuteAverage$Weekday, type = 'l', ylab = 'Average Steps')
+lines(minutes, DFminuteAverage$Weekend, col = 'blue')
+legendVector <- c('Weekdays', 'Weekend')
+legend('topleft', legend = legendVector, col = c('black', 'blue'), lwd = 2)
+```
+
+![](PA1_template_files/figure-html/plotting_weekdays-1.png) 
+

@@ -26,7 +26,7 @@ assignment <- function(){
   weekClass <- ifelse(weekdays(as.POSIXct(completeSteps$date,
                                           format = '%Y-%m-%d')) %in% weekend,
                       'weekend', 'weekday')
-  hist(newDailySteps, col = 'red')
+  hist(newDailySteps, main = 'Processed Data Histogram', xlab = 'Daily steps',col = 'red')
 }
 
 dateFormat <- function(cadena){

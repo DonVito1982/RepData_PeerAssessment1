@@ -106,7 +106,7 @@ The chosen strategy will be to substitute NA values with the mean for that 5-min
 
 ```{r process_data}
 completeSteps$processed <- 0
-for (iter in 1:length(stepsDay2$steps)){
+for (iter in 1:length(completeSteps$steps)){
   if (is.na(completeSteps$steps[iter])){
     completeSteps$processed[iter] <- minuteAverage[((iter-1) %% length(minuteAverage))+1]
   } else {
@@ -119,25 +119,53 @@ Now we have an additional column for the substituted data
 
 ### Make a histogram of the total number of steps taken each day
 
-Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+In this section will use the new column to plot a histogram of the subtituted data
 
 ```{r modified_data}
 newDailySteps <- tapply(completeSteps$processed, completeSteps$date, sum)
 newDailyStepsMean <- mean(newDailySteps)
 newDailyStepsMedian <- median(newDailySteps)
+hist(newDailySteps, main = 'Processed Data Histogram', xlab = 'Daily steps',col = 'red')
 ```
 
 The daily steps mean for the modfied data is `r newDailyStepsMean` which is higher than the previous `r dailyStepsMean`.
 
-The daily steps median for the modified data is `r newDailyStepsMedian` which is higher than
-the previous `r dailyStepsMedian`
+The daily steps median for the modified data is `r newDailyStepsMedian` which is also 
+higher than the previous `r dailyStepsMedian`
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+Yes, there are. That will be shown in a standard XY with two series: one for weekdays
+and one for weekends.
 
-Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+First, we'll create the necessary data in the form of a data frame with two columns:
+'Weekday' and 'Weekend' which will contain the average steps taken in a 5-minute time-frame.
 
-Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+Depending on the locale the `weekend_days` variable
+should be adjusted:
 
+```{r Weekend_discrimination}
+weekend_days <- c('sábado', 'domingo') # es_VE.utf8 locale
+weekClass <- ifelse(weekdays(as.POSIXct(completeSteps$date,
+                                        format = '%Y-%m-%d')) %in% weekend_days,
+                    'Weekend', 'Weekday')
+classifiedSteps <- lapply(split(completeSteps, weekClass),
+                          function(x) tapply(x$steps, x$interval, mean, na.rm = TRUE))
+```
+
+Now we add the recently created data to the previously created `DFminuteAverage`
+
+```{r populate_minuteAverage}
+DFminuteAverage$Weekday <- classifiedSteps$Weekday
+DFminuteAverage$Weekend <- classifiedSteps$Weekend
+```
+
+And finally we plot the data
+
+```{r plotting_weekdays}
+plot(minutes, DFminuteAverage$Weekday, type = 'l', ylab = 'Average Steps')
+lines(minutes, DFminuteAverage$Weekend, col = 'blue')
+legendVector <- c('Weekdays', 'Weekend')
+legend('topleft', legend = legendVector, col = c('black', 'blue'), lwd = 2)
+```
 
